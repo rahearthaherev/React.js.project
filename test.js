@@ -1,2 +1,2 @@
-const msg = 'second commit';
+const msg = 'pull test';
 console.log(msg)
