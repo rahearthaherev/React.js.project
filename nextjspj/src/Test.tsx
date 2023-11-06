@@ -28,6 +28,12 @@ interface CreateProps {
     onCreate: (title: string, body: string) => void;
 }
 
+interface UpdateProps {
+    title: string;
+    body: string;
+    onUpdate: (title: string, body: string) => void;
+}
+
 function Header(props: HeaderProps) {
     return <header>
         <h1><a href="/" onClick={(event: any) => {
@@ -76,9 +82,31 @@ function Create(props: CreateProps) {
     </article>
 }
 
+function Update(props: UpdateProps) {
+    const [title, setTitle] = useState(props.title);
+    const [body, setBody] = useState(props.body);
+    return <article>
+        <h2>Update</h2>
+        <form onSubmit={(event: any) => {
+            event.preventDefault();
+            const title: string = event.target.title.value;
+            const body: string = event.target.body.value;
+            props.onUpdate(title, body);
+        }}>
+            <p><input type='text' name='title' value={title} onChange={(event: any) => {
+                setTitle(event.target.value);
+            }} /></p>
+            <p><textarea name='body' value={body} onChange={(event: any) => {
+                setBody(event.target.value);
+            }} /></p>
+            <p><input type='submit' value='Update' /></p>
+        </form>
+    </article>
+}
+
 function App() {
     const [mode, setMode] = useState('WELCOME');
-    const [id, setId] = useState<number>();
+    const [id, setId] = useState<number>(0);
     const [nextid, setNextId] = useState<number>(4)
     const [topics, setTopics] = useState<NavProps[]>([
         { id: 1, title: "html", body: "html is ..." },
@@ -86,10 +114,15 @@ function App() {
         { id: 3, title: "tsx", body: "txs is ..." }
     ])
 
-    let content;
+    let content: JSX.Element = <></>;
+    let contextControl: JSX.Element = <></>;
 
     if (mode === "WELCOME") {
         content = <Article title="Welcome" body="Hello, Web"></Article>
+        contextControl = <li><a href="/create" onClick={(event: any) => {
+            event.preventDefault();
+            setMode("CREATE");
+        }}>Create</a></li>
     } else if (mode === "READ") {
         let title: string = "";
         let body: string = "";
@@ -101,6 +134,23 @@ function App() {
             }
         }
         content = <Article title={title} body={body}></Article>
+        contextControl = <>
+            <li><a href={'/update/' + id} onClick={(event: any) => {
+                event.preventDefault();
+                setMode("UPDATE");
+            }}>Update</a></li>
+            <li><input type='button' value='Delete' onClick={() => {
+                const newTopics: NavProps[] = [];
+                for (let i = 0; i < topics.length; i++) {
+
+                    if (id != topics[i].id) {
+                        newTopics.push(topics[i]);
+                    }
+                }
+                setTopics(newTopics);
+                setMode("WELCOME");
+            }}></input></li>
+        </>
     } else if (mode === "CREATE") {
         content = <Create onCreate={(title: string, body: string) => {
             const newTopic: NavProps = { id: nextid, title: title, body: body };
@@ -111,6 +161,28 @@ function App() {
             setId(nextid);
             setNextId(nextid + 1);
         }}></Create >
+    } else if (mode === "UPDATE") {
+        let title: string = "";
+        let body: string = "";
+        for (let i = 0; i < topics.length; i++) {
+
+            if (id === topics[i].id) {
+                title = topics[i].title;
+                body = topics[i].body;
+            }
+        }
+        content = <Update title={title} body={body} onUpdate={(title: string, body: string) => {
+            const updatedTopic: NavProps = { id: id, title: title, body: body };
+            const newTopics: NavProps[] = [...topics];
+            for (let i = 0; i < newTopics.length; i++) {
+                if (id === newTopics[i].id) {
+                    newTopics[i] = updatedTopic;
+                    break;
+                }
+            }
+            setTopics(newTopics);
+            setMode("READ");
+        }}></Update>
     }
 
     return (
@@ -123,10 +195,9 @@ function App() {
                 setId(_id);
             }}></Nav>
             {content}
-            <a href="/create" onClick={(event: any) => {
-                event.preventDefault();
-                setMode("CREATE");
-            }}>Create</a>
+            <ul>
+                {contextControl}
+            </ul>
         </div >
     )
 }
