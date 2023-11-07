@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import './App.css';
+import FolderIcon from '@mui/icons-material/Folder';
 import { useState } from 'react';
-import { Interface } from 'readline';
-import { Button, ButtonGroup, Container, Grid } from '@mui/material';
+
+import { AppBar, Box, Button, ButtonGroup, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, Drawer, Grid, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, TextField, Toolbar, Typography, useTheme } from '@mui/material';
+import { Margin } from '@mui/icons-material';
 
 interface HeaderProps {
     title: string;
@@ -20,28 +22,45 @@ interface NavProps {
     body: string;
 }
 
-interface ArtiProps {
-    title: string;
-    body: string;
-}
-
 interface CreateProps {
     onCreate: (title: string, body: string) => void;
+    onCancel: () => void;
 }
 
 interface UpdateProps {
     title: string;
     body: string;
     onUpdate: (title: string, body: string) => void;
+    onCancel: () => void;
 }
 
 function Header(props: HeaderProps) {
-    return <header>
-        <h1><a href="/" onClick={(event: any) => {
-            event.preventDefault();
-            props.onChangeMode();
-        }}>{props.title}</a></h1>
-    </header>
+    return <>
+        <AppBar
+            position="fixed"
+            sx={{ width: `calc(100% - 240px)`, ml: `240px` }}
+        >
+            <Toolbar>
+                <Typography
+                    variant="h6"
+                    component="a"
+                    sx={{ flexGrow: 1, cursor: 'pointer', display: { xs: 'none', sm: 'block' }, textDecoration: "none", color: "inherit" }}
+                    onClick={(event: any) => {
+                        event.preventDefault();
+                        props.onChangeMode();
+                    }}
+                >
+                    {props.title}
+                </Typography>
+            </Toolbar>
+        </AppBar>
+    </>
+    // <header>
+    //     <h1><a href="/" onClick={(event: any) => {
+    //         event.preventDefault();
+    //         props.onChangeMode();
+    //     }}>{props.title}</a></h1>
+    // </header>
 }
 
 function Nav(props: NavPropsList) {
@@ -54,21 +73,84 @@ function Nav(props: NavPropsList) {
         }}>{item.title}</a></li>
     ));
     return <nav>
-        <ol>
-            {renderedLis}
-        </ol>
+        <Drawer
+            sx={{
+                width: 240,
+                flexShrink: 0,
+                '& .MuiDrawer-paper': {
+                    width: 240,
+                    boxSizing: 'border-box',
+                },
+            }}
+            variant="permanent"
+            anchor="left">
+            <Toolbar />
+            <Divider />
+            <List sx={{ paddingLeft: '10px' }}>
+                {lis.map((nav, index) => (
+                    <ListItem key={nav.id} disablePadding>
+                        <ListItemIcon>
+                            <FolderIcon />
+                        </ListItemIcon>
+
+                        <ListItemButton onClick={(event: any) => {
+                            event.preventDefault();
+                            props.onChangeMode(Number(nav.id));
+                        }}>
+                            <ListItemText primary={nav.title} />
+                        </ListItemButton>
+                    </ListItem>
+                ))}
+            </List>
+        </Drawer>
     </nav>
 }
 
-function Article(props: ArtiProps) {
-    return <article>
-        <h2>{props.title}</h2>
-        {props.body}
-    </article>
-}
-
 function Create(props: CreateProps) {
-    return <article>
+    const [open, setOpen] = React.useState(true);
+    const [title, setTitle] = React.useState("");
+    const [body, setBody] = React.useState("");
+
+    const handleClose = () => {
+        setOpen(false);
+        props.onCancel();
+    };
+
+    return <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>Create</DialogTitle>
+        <DialogContent>
+            <TextField
+                autoFocus
+                margin="dense"
+                id="title"
+                label="Title"
+                type="text"
+                fullWidth
+                variant="standard"
+                onChange={(event: any) => { setTitle(event.target.value); }}
+            />
+            <TextField
+                autoFocus
+                margin="dense"
+                id="body"
+                label="Body"
+                type="text"
+                fullWidth
+                rows={4}
+                variant="standard"
+                onChange={(event: any) => { setBody(event.target.value); }}
+            />
+        </DialogContent>
+        <DialogActions>
+            <Button onClick={(event: any) => {
+                event.preventDefault();
+                props.onCreate(title, body);
+            }}>Create</Button>
+            <Button onClick={handleClose}>Cancel</Button>
+        </DialogActions>
+    </Dialog>
+
+    /*<article>
         <h2>Create</h2>
         <form onSubmit={(event: any) => {
             event.preventDefault();
@@ -80,13 +162,50 @@ function Create(props: CreateProps) {
             <p><textarea name='body' placeholder='body' /></p>
             <p><input type='submit' value='Create'></input></p>
         </form>
-    </article>
+    </article>*/
 }
 
 function Update(props: UpdateProps) {
+    const [open, setOpen] = React.useState(true);
     const [title, setTitle] = useState(props.title);
     const [body, setBody] = useState(props.body);
-    return <article>
+
+    const handleClose = () => {
+        setOpen(false);
+        props.onCancel();
+    };
+
+    return <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>Create</DialogTitle>
+        <DialogContent>
+            <TextField
+                autoFocus
+                margin="dense"
+                id="title"
+                label="Title"
+                type="text"
+                fullWidth
+                variant="standard"
+                onChange={(event: any) => { setTitle(event.target.value); }}
+            />
+            <TextField
+                id="outlined-read-only-input"
+                label="Body"
+                multiline
+                rows={4}
+                onChange={(event: any) => { setBody(event.target.value); }}
+            />
+        </DialogContent>
+        <DialogActions>
+            <Button onClick={(event: any) => {
+                event.preventDefault();
+                props.onUpdate(title, body);
+            }}>Create</Button>
+            <Button onClick={handleClose}>Cancel</Button>
+        </DialogActions>
+    </Dialog>
+
+    /*<article>
         <h2>Update</h2>
         <form onSubmit={(event: any) => {
             event.preventDefault();
@@ -102,7 +221,7 @@ function Update(props: UpdateProps) {
             }} /></p>
             <p><input type='submit' value='Update' /></p>
         </form>
-    </article>
+    </article>*/
 }
 
 function App() {
@@ -119,12 +238,23 @@ function App() {
     let contextControl: JSX.Element = <></>;
 
     if (mode === "WELCOME") {
-        content = <Article title="Welcome" body="Hello, Web"></Article>
+        //content = <Article title="Welcome" body="Hello, Web"></Article>
+        content = <TextField
+            id="outlined-read-only-input"
+            label="Welcome"
+            defaultValue="Hello, Web"
+            multiline
+            rows={4}
+            InputProps={{
+                readOnly: true,
+            }}
+        />
         contextControl =
             <Button variant="outlined" onClick={(event: any) => {
                 event.preventDefault();
                 setMode("CREATE");
-            }}>Create</Button>
+            }
+            }>Create</Button>
         // <a href="/create" onClick={(event: any) => {
         //     event.preventDefault();
         //     setMode("CREATE");
@@ -132,6 +262,7 @@ function App() {
     } else if (mode === "READ") {
         let title: string = "";
         let body: string = "";
+
         for (let i = 0; i < topics.length; i++) {
 
             if (id === topics[i].id) {
@@ -139,7 +270,16 @@ function App() {
                 body = topics[i].body;
             }
         }
-        content = <Article title={title} body={body}></Article>
+        content = <TextField
+            id="outlined-read-only-input"
+            label={title}
+            defaultValue={body}
+            multiline
+            rows={4}
+            InputProps={{
+                readOnly: true,
+            }}
+        />
         contextControl = <>
             <ButtonGroup>
                 <Button variant='outlined' onClick={(event: any) => {
@@ -183,6 +323,8 @@ function App() {
             setMode("READ");
             setId(nextid);
             setNextId(nextid + 1);
+        }} onCancel={() => {
+            setMode("WELCOME");
         }}></Create >
     } else if (mode === "UPDATE") {
         let title: string = "";
@@ -205,28 +347,38 @@ function App() {
             }
             setTopics(newTopics);
             setMode("READ");
+        }} onCancel={() => {
+            setMode("READ");
         }}></Update>
     }
 
     return (
-        <Container fixed>
+        <Container style={{ marginLeft: '250px', marginTop: '80px' }}>
             <Header title="REACT" onChangeMode={() => {
                 setMode("WELCOME");
             }}></Header>
-            <Grid container>
-                <Grid item xs={2}>
-                    <Nav topics={topics} onChangeMode={(_id: number) => {
-                        setMode("READ");
-                        setId(_id);
-                    }}></Nav>
-                </Grid>
-                <Grid item xs={10}>
-                    {content}
-                    <ul>
-                        {contextControl}
-                    </ul>
-                </Grid>
-            </Grid>
+
+            <Nav topics={topics} onChangeMode={(_id: number) => {
+                setMode("READ");
+                setId(_id);
+                console.log(_id);
+            }}></Nav>
+            <Box
+                component="div"
+                sx={{
+                    '& .MuiTextField-root': { m: 1, width: '30ch', },
+                }}
+            >
+                {content}
+            </Box>
+            <Box
+                component="div"
+                sx={{
+                    paddingLeft: '8px'
+                }}
+            >
+                {contextControl}
+            </Box>
         </Container >
     )
 }
