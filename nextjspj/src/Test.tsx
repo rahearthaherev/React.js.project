@@ -2,6 +2,7 @@ import React from 'react';
 import './App.css';
 import { useState } from 'react';
 import { Interface } from 'readline';
+import { Button, ButtonGroup, Container, Grid } from '@mui/material';
 
 interface HeaderProps {
     title: string;
@@ -119,10 +120,15 @@ function App() {
 
     if (mode === "WELCOME") {
         content = <Article title="Welcome" body="Hello, Web"></Article>
-        contextControl = <li><a href="/create" onClick={(event: any) => {
-            event.preventDefault();
-            setMode("CREATE");
-        }}>Create</a></li>
+        contextControl =
+            <Button variant="outlined" onClick={(event: any) => {
+                event.preventDefault();
+                setMode("CREATE");
+            }}>Create</Button>
+        // <a href="/create" onClick={(event: any) => {
+        //     event.preventDefault();
+        //     setMode("CREATE");
+        // }}>Create</a>
     } else if (mode === "READ") {
         let title: string = "";
         let body: string = "";
@@ -135,11 +141,28 @@ function App() {
         }
         content = <Article title={title} body={body}></Article>
         contextControl = <>
-            <li><a href={'/update/' + id} onClick={(event: any) => {
+            <ButtonGroup>
+                <Button variant='outlined' onClick={(event: any) => {
+                    event.preventDefault();
+                    setMode("UPDATE");
+                }}>Update</Button>
+                <Button variant='contained' onClick={() => {
+                    const newTopics: NavProps[] = [];
+                    for (let i = 0; i < topics.length; i++) {
+
+                        if (id != topics[i].id) {
+                            newTopics.push(topics[i]);
+                        }
+                    }
+                    setTopics(newTopics);
+                    setMode("WELCOME");
+                }}>Delete</Button>
+            </ButtonGroup>
+            {/* <a href={'/update/' + id} onClick={(event: any) => {
                 event.preventDefault();
                 setMode("UPDATE");
-            }}>Update</a></li>
-            <li><input type='button' value='Delete' onClick={() => {
+            }}>Update</a>
+            <input type='button' value='Delete' onClick={() => {
                 const newTopics: NavProps[] = [];
                 for (let i = 0; i < topics.length; i++) {
 
@@ -149,7 +172,7 @@ function App() {
                 }
                 setTopics(newTopics);
                 setMode("WELCOME");
-            }}></input></li>
+            }}></input> */}
         </>
     } else if (mode === "CREATE") {
         content = <Create onCreate={(title: string, body: string) => {
@@ -186,19 +209,25 @@ function App() {
     }
 
     return (
-        <div>
+        <Container fixed>
             <Header title="REACT" onChangeMode={() => {
                 setMode("WELCOME");
             }}></Header>
-            <Nav topics={topics} onChangeMode={(_id: number) => {
-                setMode("READ");
-                setId(_id);
-            }}></Nav>
-            {content}
-            <ul>
-                {contextControl}
-            </ul>
-        </div >
+            <Grid container>
+                <Grid item xs={2}>
+                    <Nav topics={topics} onChangeMode={(_id: number) => {
+                        setMode("READ");
+                        setId(_id);
+                    }}></Nav>
+                </Grid>
+                <Grid item xs={10}>
+                    {content}
+                    <ul>
+                        {contextControl}
+                    </ul>
+                </Grid>
+            </Grid>
+        </Container >
     )
 }
 
