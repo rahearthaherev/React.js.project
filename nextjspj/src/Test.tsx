@@ -1,11 +1,9 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import './App.css';
 import FolderIcon from '@mui/icons-material/Folder';
 import { useState } from 'react';
 
-import { AppBar, Box, Button, ButtonGroup, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, Drawer, Grid, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, TextField, Toolbar, Typography, useTheme } from '@mui/material';
-import { Margin } from '@mui/icons-material';
-
+import { AppBar, Box, Button, ButtonGroup, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, Drawer, Grid, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, TextField, Toolbar, Typography } from '@mui/material';
 interface HeaderProps {
     title: string;
     onChangeMode: () => void;
@@ -181,7 +179,6 @@ function Update(props: UpdateProps) {
             <TextField
                 autoFocus
                 margin="dense"
-                id="title"
                 label="Title"
                 type="text"
                 fullWidth
@@ -189,9 +186,11 @@ function Update(props: UpdateProps) {
                 onChange={(event: any) => { setTitle(event.target.value); }}
             />
             <TextField
+                margin="dense"
                 id="outlined-read-only-input"
                 label="Body"
                 multiline
+                fullWidth
                 rows={4}
                 onChange={(event: any) => { setBody(event.target.value); }}
             />
@@ -242,7 +241,7 @@ function App() {
         content = <TextField
             id="outlined-read-only-input"
             label="Welcome"
-            defaultValue="Hello, Web"
+            value="Hello, Web"
             multiline
             rows={4}
             InputProps={{
@@ -273,7 +272,7 @@ function App() {
         content = <TextField
             id="outlined-read-only-input"
             label={title}
-            defaultValue={body}
+            value={body}
             multiline
             rows={4}
             InputProps={{
